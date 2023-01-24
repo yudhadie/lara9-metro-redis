@@ -7,6 +7,8 @@ use App\Models\Activity;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Redis;
 
 class DataController extends Controller
 {
@@ -29,6 +31,23 @@ class DataController extends Controller
         })
         ->rawColumns(['action','status'])
         ->toJson();
+    }
+
+    public function user()
+    {
+        $data = User::orderBy('name','asc')->where('current_team_id',1)->get();
+
+        return response()->json($data);
+    }
+
+    public function userredis()
+    {
+
+        $data = Cache::remember('user',60, function() {
+            return User::orderBy('name','asc')->where('current_team_id',1)->get();
+        });
+
+        return response()->json($data);
     }
 
     public function dataactivity()
